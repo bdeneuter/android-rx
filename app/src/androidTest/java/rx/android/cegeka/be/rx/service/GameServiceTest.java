@@ -5,6 +5,7 @@ import org.mockito.Mock;
 
 import be.cegeka.android.rx.domain.Board;
 import be.cegeka.android.rx.domain.Game;
+import be.cegeka.android.rx.infrastructure.RotationSensor;
 import be.cegeka.android.rx.service.GameService;
 import rx.Subscriber;
 import rx.android.cegeka.be.rx.AbstractTestCase;
@@ -21,6 +22,9 @@ public class GameServiceTest extends AbstractTestCase {
     public static final int HEIGHT = 600;
 
     @Mock
+    private RotationSensor rotationSensor;
+
+    @Mock
     private Subscriber<Game> subscriber;
 
     private GameService gameService;
@@ -28,7 +32,7 @@ public class GameServiceTest extends AbstractTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        gameService = new GameService(new Board(WIDTH, HEIGHT));
+        gameService = new GameService(new Board(WIDTH, HEIGHT), rotationSensor);
     }
 
     public void testCreateNewGame() {

@@ -1,5 +1,7 @@
 package be.cegeka.android.rx.domain;
 
+import com.google.common.base.MoreObjects;
+
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
 
@@ -20,5 +22,10 @@ public class Position {
     @Override
     public int hashCode() {
         return reflectionHashCode(this);
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this).add("x", x).add("y", y).toString();
     }
 }

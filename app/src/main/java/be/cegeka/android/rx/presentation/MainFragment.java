@@ -5,19 +5,25 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import be.cegeka.android.rx.R;
 import be.cegeka.android.rx.domain.Game;
+import be.cegeka.android.rx.domain.Plane;
 import be.cegeka.android.rx.domain.Position;
 import rx.Observable;
+import rx.Subscription;
 import rx.functions.Action1;
+import rx.functions.Func1;
 
 import static be.cegeka.android.rx.domain.Game.toPlane;
 import static be.cegeka.android.rx.domain.Plane.toPositions;
 import static be.cegeka.android.rx.infrastructure.BeanProvider.gameService;
+import static be.cegeka.android.rx.infrastructure.BeanProvider.pixelConverter;
 import static rx.android.schedulers.AndroidSchedulers.mainThread;
 import static rx.schedulers.Schedulers.computation;
+import static rx.subscriptions.Subscriptions.empty;
 
 public class MainFragment extends Fragment {
 
@@ -25,16 +31,20 @@ public class MainFragment extends Fragment {
     private static final float IMAGE_HEIGHT_DP = 125;
 
     private Observable<Game> game;
+
     private float deltaX;
     private float deltaY;
+
+    private Subscription subscription = empty();
+    private Subscription subscription2 = empty();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        final float scale = getResources().getDisplayMetrics().density;
-        deltaX = (IMAGE_WIDTH_DP * scale)/2;
-        deltaY = (IMAGE_HEIGHT_DP * scale)/2;
+
+        deltaX = pixelConverter().toPixels(IMAGE_WIDTH_DP)/2;
+        deltaY = pixelConverter().toPixels(IMAGE_HEIGHT_DP)/2;
 
         /* Cache the stream so that only one game is created for the retained fragment.
          * Each subscriber that subscribes to this Observable will receive the same instance of the game.
@@ -62,18 +72,72 @@ public class MainFragment extends Fragment {
         * ATTENTION!!! Subscribe on a background thread and observe on the main thread
         * (HINT: use Schedulers and AndroidSchedulers)
         * */
-        game.map(toPlane())
-            .flatMap(toPositions())
-            .subscribeOn(computation())
-            .observeOn(mainThread())
-            .subscribe(new Action1<Position>() {
-                @Override
-                public void call(Position position) {
-                    planeView.setX(position.x - deltaX);
-                    planeView.setY(position.y - deltaY);
-                }
-            });
+        subscription = game.map(toPlane())
+                            .flatMap(toPositions())
+                            .subscribeOn(computation())
+                            .observeOn(mainThread())
+                            .subscribe(new Action1<Position>() {
+                                @Override
+                                public void call(Position position) {
+                                    planeView.setX(position.x - deltaX);
+                                    planeView.setY(position.y - deltaY);
+                                }
+                            });
+
+        subscription2 = game.flatMap(toEnemies())
+                            .flatMap(toPositionTOs())
+                            .subscribeOn(computation())
+                            .observeOn(mainThread())
+                            .subscribe(new Action1<PositionTO>() {
+                                @Override
+                                public void call(PositionTO position) {
+                                    ImageView enemyView = (ImageView) getView().findViewById(position.id);
+                                    if (enemyView == null) {
+                                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                                                FrameLayout.LayoutParams.WRAP_CONTENT,
+                                                FrameLayout.LayoutParams.WRAP_CONTENT);
+                                        enemyView = new ImageView(getActivity());
+                                        enemyView.setId(position.id);
+                                        enemyView.setImageResource(R.drawable.custom_albatros_dii);
+                                        ((ViewGroup)getView()).addView(enemyView, 0, params);
+                                    }
+                                    enemyView.setX(position.x - deltaX);
+                                    enemyView.setY(position.y - deltaY);
+                                }
+                            });
     }
 
+    private Func1<Plane, Observable<PositionTO>> toPositionTOs() {
+        return new Func1<Plane, Observable<PositionTO>>() {
+            @Override
+            public Observable<PositionTO> call(final Plane plane) {
+                return plane.position().map(toPositionTO(plane.getId()));
+            }
+        };
+    }
 
+    private Func1<Position, PositionTO> toPositionTO(final int planeId) {
+        return new Func1<Position, PositionTO>() {
+            @Override
+            public PositionTO call(Position position) {
+                return new PositionTO(planeId, position);
+            }
+        };
+    }
+
+    private Func1<Game, Observable<Plane>> toEnemies() {
+        return new Func1<Game, Observable<Plane>>() {
+            @Override
+            public Observable<Plane> call(Game game) {
+                return game.getEnemies();
+            }
+        };
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        subscription.unsubscribe();
+        subscription2.unsubscribe();
+    }
 }

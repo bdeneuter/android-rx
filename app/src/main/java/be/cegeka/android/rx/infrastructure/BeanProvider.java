@@ -13,6 +13,8 @@ public class BeanProvider {
     private static Board board;
     private static Context applicationContext;
     private static GameService gameService;
+    private static RotationSensor rotationSensor;
+    private static PixelConverter pixelConverter;
 
     public static void init(Context applicationContext) {
         BeanProvider.applicationContext = applicationContext;
@@ -29,10 +31,24 @@ public class BeanProvider {
         return board;
     }
 
+    public static RotationSensor rotationSensor() {
+        if (rotationSensor == null) {
+            rotationSensor = new RotationSensor(applicationContext);
+        }
+        return rotationSensor;
+    }
+
     public static GameService gameService() {
         if (gameService == null) {
-            gameService = new GameService(board());
+            gameService = new GameService(board(), rotationSensor(), pixelConverter());
         }
         return gameService;
+    }
+
+    public static PixelConverter pixelConverter() {
+        if (pixelConverter == null) {
+            pixelConverter = new PixelConverter(applicationContext);
+        }
+        return pixelConverter;
     }
 }
