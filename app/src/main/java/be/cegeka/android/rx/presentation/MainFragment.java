@@ -16,6 +16,8 @@ import rx.functions.Action1;
 import static be.cegeka.android.rx.domain.Game.toPlane;
 import static be.cegeka.android.rx.domain.Plane.toPositions;
 import static be.cegeka.android.rx.infrastructure.BeanProvider.gameService;
+import static rx.android.schedulers.AndroidSchedulers.mainThread;
+import static rx.schedulers.Schedulers.computation;
 
 public class MainFragment extends Fragment {
 
@@ -60,13 +62,17 @@ public class MainFragment extends Fragment {
         * ATTENTION!!! Subscribe on a background thread and observe on the main thread
         * (HINT: use Schedulers and AndroidSchedulers)
         * */
-        game.map(toPlane()).flatMap(toPositions()).subscribe(new Action1<Position>() {
-            @Override
-            public void call(Position position) {
-                planeView.setX(position.x - deltaX);
-                planeView.setY(position.y - deltaY);
-            }
-        });
+        game.map(toPlane())
+            .flatMap(toPositions())
+            .subscribeOn(computation())
+            .observeOn(mainThread())
+            .subscribe(new Action1<Position>() {
+                @Override
+                public void call(Position position) {
+                    planeView.setX(position.x - deltaX);
+                    planeView.setY(position.y - deltaY);
+                }
+            });
     }
 
 
