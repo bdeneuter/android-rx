@@ -1,0 +1,35 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 20
+    buildToolsVersion "20.0.0"
+
+    packagingOptions {
+        exclude 'LICENSE.txt'
+    }
+
+    defaultConfig {
+        applicationId "rx.android.cegeka.be.android_rx"
+        minSdkVersion 16
+        targetSdkVersion 20
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            runProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.netflix.rxjava:rxjava-android:0.20.4'
+
+    androidTestCompile 'junit:junit-dep:4.8.+'
+    androidTestCompile 'com.squareup:fest-android:1.0.+'
+    androidTestCompile 'com.google.dexmaker:dexmaker:1.1'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.1'
+    androidTestCompile 'org.mockito:mockito-core:1.9.5'
+}
