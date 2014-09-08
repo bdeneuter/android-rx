@@ -1,13 +1,12 @@
 package rx.android.cegeka.be.rx.service;
 
-import junit.framework.TestCase;
-
 import org.mockito.InOrder;
 import org.mockito.Mock;
 
 import be.cegeka.android.rx.domain.Game;
 import be.cegeka.android.rx.service.GameService;
 import rx.Subscriber;
+import rx.android.cegeka.be.rx.AbstractTestCase;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
@@ -15,7 +14,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-public class GameServiceTest extends TestCase {
+public class GameServiceTest extends AbstractTestCase {
 
     @Mock
     private Subscriber<Game> subscriber;
