@@ -6,6 +6,9 @@ android {
 
     packagingOptions {
         exclude 'LICENSE.txt'
+        exclude 'LICENSE'
+        exclude 'NOTICE'
+        exclude 'asm-license.txt'
     }
 
     defaultConfig {
@@ -34,4 +37,5 @@ dependencies {
     androidTestCompile 'com.google.dexmaker:dexmaker:1.1'
     androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.1'
     androidTestCompile 'org.mockito:mockito-core:1.9.5'
+    androidTestCompile 'com.jayway.awaitility:awaitility:1.6.1'
 }
