@@ -60,13 +60,7 @@ public class MainFragment extends Fragment {
         * ATTENTION!!! Subscribe on a background thread and observe on the main thread
         * (HINT: use Schedulers and AndroidSchedulers)
         * */
-        game.map(toPlane()).flatMap(toPositions()).subscribe(new Action1<Position>() {
-            @Override
-            public void call(Position position) {
-                planeView.setX(position.x - deltaX);
-                planeView.setY(position.y - deltaY);
-            }
-        });
+        throw new IllegalStateException("Implement me!!!!");
     }
 
 
