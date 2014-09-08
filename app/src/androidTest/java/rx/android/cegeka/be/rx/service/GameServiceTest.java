@@ -3,6 +3,7 @@ package rx.android.cegeka.be.rx.service;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 
+import be.cegeka.android.rx.domain.Board;
 import be.cegeka.android.rx.domain.Game;
 import be.cegeka.android.rx.service.GameService;
 import rx.Subscriber;
@@ -16,10 +17,19 @@ import static org.mockito.Mockito.verify;
 
 public class GameServiceTest extends AbstractTestCase {
 
+    public static final int WIDTH = 500;
+    public static final int HEIGHT = 600;
+
     @Mock
     private Subscriber<Game> subscriber;
 
-    private GameService gameService = new GameService();
+    private GameService gameService;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        gameService = new GameService(new Board(WIDTH, HEIGHT));
+    }
 
     public void testCreateNewGame() {
 

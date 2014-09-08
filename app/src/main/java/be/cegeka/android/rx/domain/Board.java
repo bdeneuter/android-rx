@@ -9,4 +9,8 @@ public class Board {
         this.width = width;
         this.height = height;
     }
+
+    public Position getCenter() {
+        return new Position(width / 2, height / 2);
+    }
 }

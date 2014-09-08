@@ -5,4 +5,10 @@
     android:background="#b4c1d7"
     tools:context=".Main$PlaceholderFragment">
 
+    <ImageView
+        android:id="@+id/plane"
+        android:src="@drawable/custom_plane"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
 </RelativeLayout>

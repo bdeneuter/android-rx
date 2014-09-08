@@ -6,11 +6,13 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import be.cegeka.android.rx.domain.Board;
+import be.cegeka.android.rx.service.GameService;
 
 public class BeanProvider {
 
     private static Board board;
     private static Context applicationContext;
+    private static GameService gameService;
 
     public static void init(Context applicationContext) {
         BeanProvider.applicationContext = applicationContext;
@@ -27,4 +29,10 @@ public class BeanProvider {
         return board;
     }
 
+    public static GameService gameService() {
+        if (gameService == null) {
+            gameService = new GameService(board());
+        }
+        return gameService;
+    }
 }
