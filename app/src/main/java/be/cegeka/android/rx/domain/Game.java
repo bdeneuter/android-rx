@@ -1,51 +1,57 @@
 package be.cegeka.android.rx.domain;
 
+import java.util.Random;
+
 import be.cegeka.android.rx.infrastructure.PixelConverter;
 import be.cegeka.android.rx.infrastructure.RotationSensor;
 import rx.Observable;
 import rx.functions.Func1;
 
+import static be.cegeka.android.rx.domain.Army.ALLIED;
+import static be.cegeka.android.rx.domain.Army.GERMAN;
+import static be.cegeka.android.rx.domain.Orientation.BOTTOM;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static rx.Observable.just;
+import static rx.Observable.merge;
 import static rx.Observable.timer;
 
 public class Game {
 
+    private Random random = new Random();
     private Board board;
     private PixelConverter pixelConverter;
 
     private Plane plane;
-    private Observable<Plane> enemies;
 
     public Game(Board board, RotationSensor rotationSensor, PixelConverter pixelConverter) {
         this.board = board;
         this.pixelConverter = pixelConverter;
 
-        plane = new Plane(board, new SensorControlWheel(rotationSensor), pixelConverter);
-        enemies = timer(5, 10, SECONDS).map(toEnemy());
+        plane = new Plane(ALLIED, new SensorControlWheel(rotationSensor), board, pixelConverter);
+    }
+
+    public Observable<Plane> planes() {
+        return merge(just(plane), timer(5, 3, SECONDS).map(toEnemy()));
     }
 
     private Func1<Long, Plane> toEnemy() {
         return new Func1<Long, Plane>() {
             @Override
             public Plane call(Long aLong) {
-                return new Plane(board, new Position(board.getCenter().x, 1), new AIControlWheel(), pixelConverter);
+                return new Plane(GERMAN, new Position(randomXPositionOnTheBoard(), 1), BOTTOM, new AIControlWheel(), board, pixelConverter);
             }
         };
     }
 
-    public Observable<Plane> getEnemies() {
-        return enemies;
+    private int randomXPositionOnTheBoard() {
+        return random.nextInt(board.width + 1);
     }
 
-    public Plane getPlane() {
-        return plane;
-    }
-
-    public static Func1<Game, Plane> toPlane() {
-        return new Func1<Game, Plane>() {
+    public static Func1<Game, Observable<Plane>> toPlanes() {
+        return new Func1<Game, Observable<Plane>>() {
             @Override
-            public Plane call(Game game) {
-                return game.getPlane();
+            public Observable<Plane> call(Game game) {
+                return game.planes();
             }
         };
     }

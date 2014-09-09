@@ -2,49 +2,42 @@ package be.cegeka.android.rx.presentation;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
+
+import java.util.List;
 
 import be.cegeka.android.rx.R;
 import be.cegeka.android.rx.domain.Game;
 import be.cegeka.android.rx.domain.Plane;
 import be.cegeka.android.rx.domain.Position;
 import rx.Observable;
+import rx.Observer;
 import rx.Subscription;
 import rx.functions.Action1;
-import rx.functions.Func1;
 
-import static be.cegeka.android.rx.domain.Game.toPlane;
-import static be.cegeka.android.rx.domain.Plane.toPositions;
+import static android.view.View.INVISIBLE;
+import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static android.widget.FrameLayout.LayoutParams;
+import static be.cegeka.android.rx.domain.Army.ALLIED;
+import static be.cegeka.android.rx.domain.Game.toPlanes;
 import static be.cegeka.android.rx.infrastructure.BeanProvider.gameService;
-import static be.cegeka.android.rx.infrastructure.BeanProvider.pixelConverter;
+import static com.google.common.collect.Lists.newArrayList;
 import static rx.android.schedulers.AndroidSchedulers.mainThread;
 import static rx.schedulers.Schedulers.computation;
-import static rx.subscriptions.Subscriptions.empty;
 
 public class MainFragment extends Fragment {
 
-    private static final float IMAGE_WIDTH_DP = 75;
-    private static final float IMAGE_HEIGHT_DP = 62;
-
     private Observable<Game> game;
-
-    private float deltaX;
-    private float deltaY;
-
-    private Subscription subscription = empty();
-    private Subscription subscription2 = empty();
+    private List<Subscription> subscriptions = newArrayList();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-
-        deltaX = pixelConverter().toPixels(IMAGE_WIDTH_DP)/2;
-        deltaY = pixelConverter().toPixels(IMAGE_HEIGHT_DP)/2;
 
         /* Cache the stream so that only one game is created for the retained fragment.
          * Each subscriber that subscribes to this Observable will receive the same instance of the game.
@@ -60,84 +53,69 @@ public class MainFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        final ImageView planeView = (ImageView) getView().findViewById(R.id.plane);
-
-        /*
-        * Show the plane image to the position of the plane.
-        *
-        *   1. Map the game to the plane.
-        *   2. Flat map the stream of positions on the plane
-        *   3. Subscribe to the stream of positions of the plane. Adjust the location of the plane image on each item emitted.
-        *
-        * ATTENTION!!! Subscribe on a background thread and observe on the main thread
-        * (HINT: use Schedulers and AndroidSchedulers)
-        * */
-        subscription = game.map(toPlane())
-                            .flatMap(toPositions())
-                            .subscribeOn(computation())
-                            .observeOn(mainThread())
-                            .subscribe(new Action1<Position>() {
-                                @Override
-                                public void call(Position position) {
-                                    planeView.setX(position.x - deltaX);
-                                    planeView.setY(position.y - deltaY);
-                                }
-                            });
-
-        subscription2 = game.flatMap(toEnemies())
-                            .flatMap(toPositionTOs())
-                            .subscribeOn(computation())
-                            .observeOn(mainThread())
-                            .subscribe(new Action1<PositionTO>() {
-                                @Override
-                                public void call(PositionTO position) {
-                                    ImageView enemyView = (ImageView) getView().findViewById(position.id);
-                                    if (enemyView == null) {
-                                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                                                FrameLayout.LayoutParams.WRAP_CONTENT,
-                                                FrameLayout.LayoutParams.WRAP_CONTENT);
-                                        enemyView = new ImageView(getActivity());
-                                        enemyView.setId(position.id);
-                                        enemyView.setImageResource(R.drawable.custom_enemy);
-                                        ((ViewGroup)getView()).addView(enemyView, 0, params);
-                                    }
-                                    enemyView.setX(position.x - deltaX);
-                                    enemyView.setY(position.y - deltaY);
-                                }
-                            });
+;
+        subscriptions.add(
+                game.flatMap(toPlanes())
+                      .subscribeOn(computation())
+                      .observeOn(mainThread())
+                      .subscribe(new Action1<Plane>() {
+                          @Override
+                          public void call(Plane plane) {
+                              handleNewPlane(plane);
+                          }
+                      }));
     }
 
-    private Func1<Plane, Observable<PositionTO>> toPositionTOs() {
-        return new Func1<Plane, Observable<PositionTO>>() {
-            @Override
-            public Observable<PositionTO> call(final Plane plane) {
-                return plane.position().map(toPositionTO(plane.getId()));
-            }
-        };
+    private void handleNewPlane(final Plane plane) {
+        final ImageView view = createView(plane);
+        subscriptions.add(
+                plane.position()
+                     .subscribeOn(computation())
+                     .observeOn(mainThread())
+                     .subscribe(new Observer<Position>() {
+
+                         @Override
+                         public void onCompleted() {
+                            Log.d("MainFragment", "view removed for plane " + plane);
+                            getView().removeView(view);
+                         }
+
+                         @Override
+                         public void onError(Throwable e) {
+
+                         }
+
+                         @Override
+                         public void onNext(Position position) {
+                            view.setX(position.x - view.getWidth() / 2);
+                            view.setY(position.y - view.getHeight() / 2);
+                            view.setVisibility(View.VISIBLE);
+                         }
+                     })
+
+        );
     }
 
-    private Func1<Position, PositionTO> toPositionTO(final int planeId) {
-        return new Func1<Position, PositionTO>() {
-            @Override
-            public PositionTO call(Position position) {
-                return new PositionTO(planeId, position);
-            }
-        };
-    }
-
-    private Func1<Game, Observable<Plane>> toEnemies() {
-        return new Func1<Game, Observable<Plane>>() {
-            @Override
-            public Observable<Plane> call(Game game) {
-                return game.getEnemies();
-            }
-        };
+    private ImageView createView(Plane plane) {
+        ImageView view = new ImageView(getActivity());
+        view.setId(plane.getId());
+        view.setImageResource(plane.getArmy() == ALLIED ? R.drawable.custom_plane : R.drawable.custom_enemy);
+        view.setVisibility(INVISIBLE);
+        getView().addView(view, 0, new LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+        return view;
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        subscription.unsubscribe();
-        subscription2.unsubscribe();
+        for(Subscription subscription: subscriptions) {
+            subscription.unsubscribe();
+        }
+        getView().removeAllViews();
+    }
+
+    @Override
+    public ViewGroup getView() {
+        return (ViewGroup) super.getView();
     }
 }

@@ -24,7 +24,7 @@ public class Board {
         return new Position(width / 2, height / 2);
     }
 
-    public Func1<Position, Boolean> isContained() {
+    public Func1<Position, Boolean> containsPosition() {
         return new Func1<Position, Boolean>() {
             @Override
             public Boolean call(Position position) {
