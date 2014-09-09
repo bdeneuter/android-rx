@@ -19,4 +19,7 @@ public class PixelConverter {
         return (int) (valueInDp * scale);
     }
 
+    public int toDp(int valineInPixels) {
+        return (int) (valineInPixels / scale);
+    }
 }

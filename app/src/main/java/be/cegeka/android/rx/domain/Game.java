@@ -2,7 +2,6 @@ package be.cegeka.android.rx.domain;
 
 import java.util.Random;
 
-import be.cegeka.android.rx.infrastructure.PixelConverter;
 import be.cegeka.android.rx.infrastructure.RotationSensor;
 import rx.Observable;
 import rx.functions.Func1;
@@ -19,15 +18,12 @@ public class Game {
 
     private Random random = new Random();
     private Board board;
-    private PixelConverter pixelConverter;
 
     private Plane plane;
 
-    public Game(Board board, RotationSensor rotationSensor, PixelConverter pixelConverter) {
+    public Game(Board board, RotationSensor rotationSensor) {
         this.board = board;
-        this.pixelConverter = pixelConverter;
-
-        plane = new Plane(ALLIED, new SensorControlWheel(rotationSensor), board, pixelConverter);
+        plane = new Plane(ALLIED, new SensorControlWheel(rotationSensor), board);
     }
 
     public Observable<Plane> planes() {
@@ -42,7 +38,7 @@ public class Game {
         return new Func1<Long, Plane>() {
             @Override
             public Plane call(Long aLong) {
-                return new Plane(GERMAN, new Position(randomXPositionOnTheBoard(), 1), BOTTOM, new AIControlWheel(), board, pixelConverter);
+                return new Plane(GERMAN, new Position(randomXPositionOnTheBoard(), 1), BOTTOM, new AIControlWheel(), board);
             }
         };
     }

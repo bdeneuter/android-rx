@@ -26,7 +26,7 @@ public class BeanProvider {
             Display display = wm.getDefaultDisplay();
             Point point = new Point();
             display.getSize(point);
-            board = new Board(point.x, point.y);
+            board = new Board(pixelConverter().toDp(point.x), pixelConverter().toDp(point.y));
         }
         return board;
     }
@@ -40,7 +40,7 @@ public class BeanProvider {
 
     public static GameService gameService() {
         if (gameService == null) {
-            gameService = new GameService(board(), rotationSensor(), pixelConverter());
+            gameService = new GameService(board(), rotationSensor());
         }
         return gameService;
     }

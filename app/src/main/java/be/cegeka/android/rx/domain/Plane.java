@@ -1,9 +1,10 @@
 package be.cegeka.android.rx.domain;
 
 
+import android.graphics.Rect;
+
 import com.google.common.base.MoreObjects;
 
-import be.cegeka.android.rx.infrastructure.PixelConverter;
 import rx.Observable;
 import rx.functions.Action1;
 import rx.functions.Func1;
@@ -19,8 +20,11 @@ import static rx.Observable.merge;
 
 public class Plane {
 
+    public static final int WIDTH_IN_DP = 75;
+    public static final int HEIGHT_IN_DP = 62;
+
     private int id = nextInt();
-    private int speed;
+    private int speed = 10;
 
     private Observable<Position> position;
 
@@ -28,14 +32,14 @@ public class Plane {
     private Orientation orientation;
     private Army army;
 
-    public Plane(Army army, ControlWheel controlWheel, Board board, PixelConverter pixelConverter) {
-        this(army, board.getCenter(), TOP, controlWheel, board, pixelConverter);
+    public Plane(Army army, ControlWheel controlWheel, Board board) {
+        this(army, board.getCenter(), TOP, controlWheel, board);
     }
 
-    public Plane(Army army, Position position, Orientation orientation, ControlWheel controlWheel, final Board board, PixelConverter pixelConverter) {
+    public Plane(Army army, Position position, Orientation orientation, ControlWheel controlWheel, final Board board) {
         this.army = army;
         this.orientation = orientation;
-        speed = pixelConverter.toPixels(10);
+        speed = 10;
         lastPosition = position;
 
         Observable<Position> moveLeft = controlWheel.direction()
@@ -60,6 +64,17 @@ public class Plane {
                                  .distinctUntilChanged()
                                  .doOnNext(setLastPosition())
                                  .takeWhile(board.containsPosition());
+    }
+
+    public Observable<Rect> bounds() {
+        return position().replay(1).refCount().map(new Func1<Position, Rect>() {
+            @Override
+            public Rect call(Position position) {
+                int deltaX = WIDTH_IN_DP / 2;
+                int deltaY = HEIGHT_IN_DP / 2;
+                return new Rect(position.x  - deltaX, position.y - deltaY, position.x + deltaX, position.y + deltaY);
+            }
+        });
     }
 
     public int getId() {
@@ -139,5 +154,9 @@ public class Plane {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this).add("id", id).add("army", army).add("position", lastPosition).toString();
+    }
+
+    public Orientation getOrientation() {
+        return orientation;
     }
 }

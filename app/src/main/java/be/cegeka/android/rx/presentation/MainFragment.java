@@ -2,7 +2,6 @@ package be.cegeka.android.rx.presentation;
 
 import android.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +23,9 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static android.widget.FrameLayout.LayoutParams;
 import static be.cegeka.android.rx.domain.Army.ALLIED;
 import static be.cegeka.android.rx.domain.Game.toPlanes;
+import static be.cegeka.android.rx.domain.Orientation.BOTTOM;
 import static be.cegeka.android.rx.infrastructure.BeanProvider.gameService;
+import static be.cegeka.android.rx.infrastructure.BeanProvider.pixelConverter;
 import static com.google.common.collect.Lists.newArrayList;
 import static rx.android.schedulers.AndroidSchedulers.mainThread;
 import static rx.schedulers.Schedulers.computation;
@@ -76,7 +77,6 @@ public class MainFragment extends Fragment {
 
                          @Override
                          public void onCompleted() {
-                            Log.d("MainFragment", "view removed for plane " + plane);
                             getView().removeView(view);
                          }
 
@@ -87,8 +87,8 @@ public class MainFragment extends Fragment {
 
                          @Override
                          public void onNext(Position position) {
-                            view.setX(position.x - view.getWidth() / 2);
-                            view.setY(position.y - view.getHeight() / 2);
+                            view.setX(pixelConverter().toPixels(position.x) - view.getWidth() / 2);
+                            view.setY(pixelConverter().toPixels(position.y) - view.getHeight() / 2);
                             view.setVisibility(View.VISIBLE);
                          }
                      })
@@ -99,10 +99,18 @@ public class MainFragment extends Fragment {
     private ImageView createView(Plane plane) {
         ImageView view = new ImageView(getActivity());
         view.setId(plane.getId());
-        view.setImageResource(plane.getArmy() == ALLIED ? R.drawable.custom_plane : R.drawable.custom_enemy);
+        view.setImageResource(plane.getArmy() == ALLIED ? R.drawable.custom_allies : R.drawable.custom_germany);
         view.setVisibility(INVISIBLE);
+        view.setRotation(calculateRotation(plane));
         getView().addView(view, 0, new LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
         return view;
+    }
+
+    private float calculateRotation(Plane plane) {
+        if (plane.getOrientation() == BOTTOM) {
+            return 180;
+        }
+        return 0;
     }
 
     @Override
