@@ -19,8 +19,8 @@ import static be.cegeka.android.rx.infrastructure.BeanProvider.gameService;
 
 public class MainFragment extends Fragment {
 
-    private static final float IMAGE_WIDTH_DP = 150;
-    private static final float IMAGE_HEIGHT_DP = 125;
+    private static final float IMAGE_WIDTH_DP = 75;
+    private static final float IMAGE_HEIGHT_DP = 62;
 
     private Observable<Game> game;
     private float deltaX;
