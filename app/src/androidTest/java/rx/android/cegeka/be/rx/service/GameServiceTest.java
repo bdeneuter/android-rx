@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import be.cegeka.android.rx.domain.Board;
 import be.cegeka.android.rx.domain.Game;
 import be.cegeka.android.rx.infrastructure.PixelConverter;
+import be.cegeka.android.rx.mocks.RotationSensorMock;
 import be.cegeka.android.rx.service.GameService;
 import rx.Subscriber;
 import rx.android.cegeka.be.rx.AbstractTestCase;
@@ -29,7 +30,7 @@ public class GameServiceTest extends AbstractTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        gameService = new GameService(new Board(WIDTH, HEIGHT), rotationSensorMock, new PixelConverter(getContext()));
+        gameService = new GameService(new Board(WIDTH, HEIGHT), new RotationSensorMock(), new PixelConverter(getContext()));
     }
 
     public void testCreateNewGame() {

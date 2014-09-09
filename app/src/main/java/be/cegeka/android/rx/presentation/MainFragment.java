@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import be.cegeka.android.rx.R;
@@ -36,7 +35,6 @@ public class MainFragment extends Fragment {
     private float deltaY;
 
     private Subscription subscription = empty();
-    private Subscription subscription2 = empty();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -83,28 +81,6 @@ public class MainFragment extends Fragment {
                                     planeView.setY(position.y - deltaY);
                                 }
                             });
-
-        subscription2 = game.flatMap(toEnemies())
-                            .flatMap(toPositionTOs())
-                            .subscribeOn(computation())
-                            .observeOn(mainThread())
-                            .subscribe(new Action1<PositionTO>() {
-                                @Override
-                                public void call(PositionTO position) {
-                                    ImageView enemyView = (ImageView) getView().findViewById(position.id);
-                                    if (enemyView == null) {
-                                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                                                FrameLayout.LayoutParams.WRAP_CONTENT,
-                                                FrameLayout.LayoutParams.WRAP_CONTENT);
-                                        enemyView = new ImageView(getActivity());
-                                        enemyView.setId(position.id);
-                                        enemyView.setImageResource(R.drawable.custom_enemy);
-                                        ((ViewGroup)getView()).addView(enemyView, 0, params);
-                                    }
-                                    enemyView.setX(position.x - deltaX);
-                                    enemyView.setY(position.y - deltaY);
-                                }
-                            });
     }
 
     private Func1<Plane, Observable<PositionTO>> toPositionTOs() {
@@ -125,19 +101,9 @@ public class MainFragment extends Fragment {
         };
     }
 
-    private Func1<Game, Observable<Plane>> toEnemies() {
-        return new Func1<Game, Observable<Plane>>() {
-            @Override
-            public Observable<Plane> call(Game game) {
-                return game.getEnemies();
-            }
-        };
-    }
-
     @Override
     public void onPause() {
         super.onPause();
         subscription.unsubscribe();
-        subscription2.unsubscribe();
     }
 }

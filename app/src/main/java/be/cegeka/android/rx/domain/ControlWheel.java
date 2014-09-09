@@ -1,9 +1,18 @@
 package be.cegeka.android.rx.domain;
 
+import be.cegeka.android.rx.infrastructure.RotationSensor;
 import rx.Observable;
 
-public interface ControlWheel {
+public class ControlWheel {
 
-    Observable<Direction> direction();
+    private RotationSensor rotationSensor;
+
+    public ControlWheel(RotationSensor rotationSensor) {
+        this.rotationSensor = rotationSensor;
+    }
+
+    public Observable<Direction> direction() {
+        throw new IllegalStateException("Implement me !!!");
+    }
 
 }
