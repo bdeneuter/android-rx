@@ -5,9 +5,9 @@ import org.mockito.Mock;
 
 import be.cegeka.android.rx.domain.Board;
 import be.cegeka.android.rx.domain.Game;
-import be.cegeka.android.rx.infrastructure.RotationSensor;
+import be.cegeka.android.rx.infrastructure.PixelConverter;
 import be.cegeka.android.rx.service.GameService;
-import rx.Subscriber;
+import rx.Observer;
 import rx.android.cegeka.be.rx.AbstractTestCase;
 
 import static org.mockito.Matchers.any;
@@ -22,29 +22,26 @@ public class GameServiceTest extends AbstractTestCase {
     public static final int HEIGHT = 600;
 
     @Mock
-    private RotationSensor rotationSensor;
-
-    @Mock
-    private Subscriber<Game> subscriber;
+    private Observer<Game> observer;
 
     private GameService gameService;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        gameService = new GameService(new Board(WIDTH, HEIGHT), rotationSensor);
+        gameService = new GameService(new Board(WIDTH, HEIGHT), rotationSensorMock, new PixelConverter(getContext()));
     }
 
     public void testCreateNewGame() {
 
         // WHEN
-        gameService.createNewGame().subscribe(subscriber);
+        gameService.createNewGame().subscribe(observer);
 
         // THEN
-        InOrder inOrder = inOrder(subscriber);
-        inOrder.verify(subscriber).onNext(isA(Game.class));
-        inOrder.verify(subscriber).onCompleted();
-        verify(subscriber, never()).onError(any(Exception.class));
+        InOrder inOrder = inOrder(observer);
+        inOrder.verify(observer).onNext(isA(Game.class));
+        inOrder.verify(observer).onCompleted();
+        verify(observer, never()).onError(any(Exception.class));
     }
 
 }

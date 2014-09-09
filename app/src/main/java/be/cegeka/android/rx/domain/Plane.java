@@ -26,7 +26,7 @@ public class Plane {
     }
 
     public Plane(Board board, Position position, ControlWheel controlWheel, PixelConverter pixelConverter) {
-        delta = pixelConverter.toPixels(5);
+        delta = pixelConverter.toPixels(10);
         lastPosition = position;
 
         Observable<Position> moveLeft = controlWheel.direction()
