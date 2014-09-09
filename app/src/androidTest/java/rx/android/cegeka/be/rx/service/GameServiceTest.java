@@ -7,7 +7,7 @@ import be.cegeka.android.rx.domain.Board;
 import be.cegeka.android.rx.domain.Game;
 import be.cegeka.android.rx.infrastructure.PixelConverter;
 import be.cegeka.android.rx.service.GameService;
-import rx.Observer;
+import rx.Subscriber;
 import rx.android.cegeka.be.rx.AbstractTestCase;
 
 import static org.mockito.Matchers.any;
@@ -22,7 +22,7 @@ public class GameServiceTest extends AbstractTestCase {
     public static final int HEIGHT = 600;
 
     @Mock
-    private Observer<Game> observer;
+    private Subscriber<Game> observer;
 
     private GameService gameService;
 

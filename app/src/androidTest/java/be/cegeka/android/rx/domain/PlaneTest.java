@@ -4,27 +4,24 @@ import org.mockito.Mock;
 
 import be.cegeka.android.rx.infrastructure.PixelConverter;
 import rx.Observable;
-import rx.Subscriber;
+import rx.Observer;
 import rx.android.cegeka.be.rx.AbstractTestCase;
 
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class PlaneTest extends AbstractTestCase {
 
-    @Mock
-    private ControlWheel controlWheel;
+    private ControlWheel controlWheel = new ControlWheel() {
+        @Override
+        public Observable<Direction> direction() {
+            return Observable.<Direction>empty();
+        }
+    };
 
     @Mock
-    private Subscriber<Position> subscriber;
+    private Observer<Position> subscriber;
 
     private Plane plane;
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        when(controlWheel.direction()).thenReturn(Observable.<Direction>empty());
-    }
 
     public void testPosition() throws Exception {
         // GIVEN

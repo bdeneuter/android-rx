@@ -33,7 +33,7 @@ public class BeanProvider {
 
     public static RotationSensor rotationSensor() {
         if (rotationSensor == null) {
-            rotationSensor = new RotationSensor(applicationContext);
+            rotationSensor = new RotationSensorImpl(applicationContext);
         }
         return rotationSensor;
     }
