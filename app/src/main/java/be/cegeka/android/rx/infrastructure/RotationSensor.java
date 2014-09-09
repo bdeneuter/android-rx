@@ -6,20 +6,14 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import rx.Observable;
 import rx.Subscriber;
-import rx.functions.Action0;
 import rx.subjects.PublishSubject;
-import rx.subscriptions.Subscriptions;
 
 import static android.hardware.SensorManager.getOrientation;
 import static android.hardware.SensorManager.getRotationMatrixFromVector;
-import static rx.schedulers.Schedulers.computation;
-import static rx.schedulers.Schedulers.io;
 
-public class RotationSensor {
+public class RotationSensor extends AbstractSensor {
 
     private final SensorManager sensorManager;
     private final Sensor gameRotationSensor;
@@ -32,52 +26,46 @@ public class RotationSensor {
     private PublishSubject<Double> subjectY = PublishSubject.create();
     private PublishSubject<Double> subjectZ = PublishSubject.create();
 
-    private AtomicInteger numberOfSubscribers = new AtomicInteger(0);
-
     public RotationSensor(Context context) {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         gameRotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
 
     public Observable<Double> connectX() {
-        return toObservable(subjectX);
+        return createObservable(new Observable.OnSubscribe<Double>() {
+            @Override
+            public void call(Subscriber<? super Double> subscriber) {
+                subjectX.subscribe(subscriber);
+            }
+        });
     }
 
     public Observable<Double> connectY() {
-        return toObservable(subjectY);
+        return createObservable(new Observable.OnSubscribe<Double>() {
+            @Override
+            public void call(Subscriber<? super Double> subscriber) {
+                subjectY.subscribe(subscriber);
+            }
+        });
     }
 
     public Observable<Double> connectZ() {
-        return toObservable(subjectZ);
-    }
-
-    private Observable<Double> toObservable(final PublishSubject subject) {
-        return Observable.create(new Observable.OnSubscribe<Double>() {
+        return createObservable(new Observable.OnSubscribe<Double>() {
             @Override
-            public void call(final Subscriber<? super Double> subscriber) {
-                subscriber.add(subject.subscribe(subscriber));
-                startListening();
-                subscriber.add(Subscriptions.create(stopListening()));
+            public void call(Subscriber<? super Double> subscriber) {
+                subjectZ.subscribe(subscriber);
             }
-        }).subscribeOn(io())
-          .observeOn(computation());
+        });
     }
 
-    private Action0 stopListening() {
-        return new Action0() {
-            @Override
-            public void call() {
-                if (numberOfSubscribers.decrementAndGet() == 0) {
-                    sensorManager.unregisterListener(eventListener);
-                }
-            }
-        };
+    @Override
+    protected void connect() {
+        sensorManager.registerListener(eventListener, gameRotationSensor, SensorManager.SENSOR_DELAY_UI);
     }
 
-    private void startListening() {
-        if (numberOfSubscribers.incrementAndGet() == 1) {
-            sensorManager.registerListener(eventListener, gameRotationSensor, SensorManager.SENSOR_DELAY_UI);
-        }
+    @Override
+    protected void disconnect() {
+        sensorManager.unregisterListener(eventListener);
     }
 
     private class EventListener implements SensorEventListener {

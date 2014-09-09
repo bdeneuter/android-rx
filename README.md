@@ -1,12 +1,9 @@
-Exercise 2: show plane on the screen
+Exercise 2: Move the plane
 ====================================
 
-Show the plane image on the screen on the position of the plane.
-See class MainFragment.
+Connect the control wheel of the plane to the orientation sensor of the device.
 
-    1. Map the game to the plane.
-    2. Flat map the stream of positions on the plane
-    3. Subscribe to the stream of positions of the plane. Adjust the location of the plane image on each item emitted.
-
-        ATTENTION!!! Subscribe on a background thread and observe on the main thread
-        (HINT: use Schedulers and AndroidSchedulers)
+1. Decorate the Android orientation sensor (RotationSensor)
+    a. provide streams for X, Y, Z rotations in degrees
+    b. start listening to the sensor when there is a subscriber
+    c. stop listening to the sensor when there is no subscriber
