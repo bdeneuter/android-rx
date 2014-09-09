@@ -31,7 +31,11 @@ public class Game {
     }
 
     public Observable<Plane> planes() {
-        return merge(just(plane), timer(5, 3, SECONDS).map(toEnemy()));
+        return merge(just(plane), enemies());
+    }
+
+    private Observable<Plane> enemies() {
+        return timer(5, 3, SECONDS).map(toEnemy());
     }
 
     private Func1<Long, Plane> toEnemy() {

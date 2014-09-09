@@ -53,7 +53,7 @@ public class Plane {
 
         Observable<Position> movements = merge(moveLeft, moveRight, moveForward, moveBackwards);
         if (army == ALLIED) {
-            movements.filter(board.containsPosition());
+            movements = movements.filter(board.containsPosition());
         }
 
         this.position = movements.startWith(position)
