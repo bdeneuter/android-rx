@@ -6,7 +6,7 @@ import org.mockito.Mock;
 import be.cegeka.android.rx.domain.Board;
 import be.cegeka.android.rx.domain.Game;
 import be.cegeka.android.rx.service.GameService;
-import rx.Observer;
+import rx.Subscriber;
 import rx.android.cegeka.be.rx.AbstractTestCase;
 
 import static org.mockito.Matchers.any;
@@ -21,7 +21,7 @@ public class GameServiceTest extends AbstractTestCase {
     public static final int HEIGHT = 600;
 
     @Mock
-    private Observer<Game> observer;
+    private Subscriber<Game> observer;
 
     private GameService gameService;
 
@@ -37,10 +37,10 @@ public class GameServiceTest extends AbstractTestCase {
         gameService.createNewGame().subscribe(observer);
 
         // THEN
+        verify(observer, never()).onError(any(Exception.class));
         InOrder inOrder = inOrder(observer);
         inOrder.verify(observer).onNext(isA(Game.class));
         inOrder.verify(observer).onCompleted();
-        verify(observer, never()).onError(any(Exception.class));
     }
 
 }

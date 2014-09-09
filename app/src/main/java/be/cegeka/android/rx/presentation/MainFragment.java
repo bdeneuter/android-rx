@@ -9,12 +9,8 @@ import android.widget.ImageView;
 
 import be.cegeka.android.rx.R;
 import be.cegeka.android.rx.domain.Game;
-import be.cegeka.android.rx.domain.Position;
 import rx.Observable;
-import rx.functions.Action1;
 
-import static be.cegeka.android.rx.domain.Game.toPlane;
-import static be.cegeka.android.rx.domain.Plane.toPositions;
 import static be.cegeka.android.rx.infrastructure.BeanProvider.gameService;
 
 public class MainFragment extends Fragment {

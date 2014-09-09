@@ -2,7 +2,6 @@ package be.cegeka.android.rx.domain;
 
 import org.mockito.Mock;
 
-import be.cegeka.android.rx.infrastructure.PixelConverter;
 import rx.Subscriber;
 import rx.android.cegeka.be.rx.AbstractTestCase;
 
