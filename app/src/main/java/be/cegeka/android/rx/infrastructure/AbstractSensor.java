@@ -14,7 +14,7 @@ public abstract class AbstractSensor {
 
     private AtomicInteger numberOfSubscribers = new AtomicInteger(0);
 
-    protected <T> Observable createObservable(final Observable.OnSubscribe<T> onSubscribe) {
+    public <T> Observable createObservable(final Observable.OnSubscribe<T> onSubscribe) {
         return Observable.create(new Observable.OnSubscribe<T>() {
             @Override
             public void call(final Subscriber<? super T> subscriber) {
