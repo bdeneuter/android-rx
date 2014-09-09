@@ -27,8 +27,8 @@ import static rx.subscriptions.Subscriptions.empty;
 
 public class MainFragment extends Fragment {
 
-    private static final float IMAGE_WIDTH_DP = 150;
-    private static final float IMAGE_HEIGHT_DP = 125;
+    private static final float IMAGE_WIDTH_DP = 75;
+    private static final float IMAGE_HEIGHT_DP = 62;
 
     private Observable<Game> game;
 
@@ -98,7 +98,7 @@ public class MainFragment extends Fragment {
                                                 FrameLayout.LayoutParams.WRAP_CONTENT);
                                         enemyView = new ImageView(getActivity());
                                         enemyView.setId(position.id);
-                                        enemyView.setImageResource(R.drawable.custom_albatros_dii);
+                                        enemyView.setImageResource(R.drawable.custom_enemy);
                                         ((ViewGroup)getView()).addView(enemyView, 0, params);
                                     }
                                     enemyView.setX(position.x - deltaX);
