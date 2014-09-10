@@ -96,4 +96,8 @@ public class Plane {
     public void destroy() {
         this.destroyed = true;
     }
+
+    public boolean isDestroyed() {
+        return destroyed;
+    }
 }
