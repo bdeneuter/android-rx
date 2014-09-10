@@ -26,16 +26,14 @@ public class Game {
     private Board board;
     private CollisionDetection collisionDetection;
 
-    private Plane plane;
-    private List<Plane> enemies;
     private ConnectableObservable<Plane> planes;
 
     public Game(Board board, RotationSensor rotationSensor) {
         this.board = board;
-        plane = new Plane(ALLIED, new SensorControlWheel(rotationSensor), board);
-        enemies = createEnemies(15);
+        Plane plane = new Plane(ALLIED, new SensorControlWheel(rotationSensor), board);
+        List<Plane> enemies = createEnemies(15);
         planes = merge(just(plane), from(enemies).zipWith(timer(5, 3, SECONDS), toPlane())).publish();
-        collisionDetection = new CollisionDetection();
+        collisionDetection = new CollisionDetection(plane, planes);
     }
 
     private Func2<Plane, Long, Plane> toPlane() {
@@ -48,7 +46,7 @@ public class Game {
     }
 
     public Subscription start() {
-        Subscription subscription = collisionDetection.start(plane, planes());
+        Subscription subscription = collisionDetection.start();
         planes().connect();
         return subscription;
     }

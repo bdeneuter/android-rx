@@ -14,7 +14,15 @@ import static rx.Observable.combineLatest;
 
 public class CollisionDetection {
 
-    public Subscription start(final Plane plane, Observable<Plane> planes) {
+    private Plane plane;
+    private Observable<Plane> planes;
+
+    CollisionDetection(Plane plane, Observable<Plane> planes) {
+        this.plane = plane;
+        this.planes = planes;
+    }
+
+    public Subscription start() {
         Observable<Bounds> boundsOtherPlanes = planes.filter(otherPlanes(plane)).flatMap(toBounds());
 
         return combineLatest(plane.bounds(), boundsOtherPlanes, detectCollision())
