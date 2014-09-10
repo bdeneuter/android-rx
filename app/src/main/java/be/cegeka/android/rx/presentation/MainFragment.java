@@ -54,7 +54,20 @@ public class MainFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-;
+        observePlanes();
+        startGame();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        for(Subscription subscription: subscriptions) {
+            subscription.unsubscribe();
+        }
+        getView().removeAllViews();
+    }
+
+    private void observePlanes() {
         subscriptions.add(
                 game.flatMap(toPlanes())
                       .subscribeOn(computation())
@@ -65,6 +78,17 @@ public class MainFragment extends Fragment {
                               handleNewPlane(plane);
                           }
                       }));
+    }
+
+    private void startGame() {
+        subscriptions.add(
+                game.subscribeOn(computation())
+                    .subscribe(new Action1<Game>() {
+                        @Override
+                        public void call(Game game) {
+                            subscriptions.add(game.start());
+                        }
+                    }));
     }
 
     private void handleNewPlane(final Plane plane) {
@@ -111,15 +135,6 @@ public class MainFragment extends Fragment {
             return 180;
         }
         return 0;
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        for(Subscription subscription: subscriptions) {
-            subscription.unsubscribe();
-        }
-        getView().removeAllViews();
     }
 
     @Override

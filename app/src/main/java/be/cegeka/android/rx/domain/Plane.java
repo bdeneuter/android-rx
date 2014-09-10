@@ -25,6 +25,7 @@ public class Plane {
 
     private Army army;
     private Orientation orientation;
+    private boolean destroyed;
 
     public Plane(Army army, ControlWheel controlWheel, Board board) {
         this(army, board.getCenter(), TOP, controlWheel, board);
@@ -38,7 +39,17 @@ public class Plane {
                                     .scan(position, addPosition())
                                     .filter(onTheBoardOrGerman(army, board))
                                     .distinctUntilChanged()
+                                    .takeWhile(notDestroyed())
                                     .takeWhile(board.containsPosition());
+    }
+
+    private Func1<Position, Boolean> notDestroyed() {
+        return new Func1<Position, Boolean>() {
+            @Override
+            public Boolean call(Position position) {
+                return !destroyed;
+            }
+        };
     }
 
     private Func1<Position, Boolean> onTheBoardOrGerman(final Army army, final Board board) {
@@ -62,13 +73,13 @@ public class Plane {
         return position;
     }
 
-    public Observable<Rect> bounds() {
-        return position().replay(1).refCount().map(new Func1<Position, Rect>() {
+    public Observable<Bounds> bounds() {
+        return position().map(new Func1<Position, Bounds>() {
             @Override
-            public Rect call(Position position) {
+            public Bounds call(Position position) {
                 int deltaX = WIDTH_IN_DP / 2;
                 int deltaY = HEIGHT_IN_DP / 2;
-                return new Rect(position.x  - deltaX, position.y - deltaY, position.x + deltaX, position.y + deltaY);
+                return new Bounds(Plane.this, new Rect(position.x  - deltaX, position.y - deltaY, position.x + deltaX, position.y + deltaY));
             }
         });
     }
@@ -80,5 +91,9 @@ public class Plane {
 
     public Orientation getOrientation() {
         return orientation;
+    }
+
+    public void destroy() {
+        this.destroyed = true;
     }
 }
