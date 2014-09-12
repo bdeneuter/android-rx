@@ -1,4 +1,4 @@
-Exercise 2: show plane on the screen
+Exercise 2: Create streams
 ====================================
 
 Show the plane image on the screen on the position of the plane.
