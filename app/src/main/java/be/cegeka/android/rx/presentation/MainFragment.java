@@ -9,12 +9,10 @@ import android.widget.ImageView;
 
 import be.cegeka.android.rx.R;
 import be.cegeka.android.rx.domain.Game;
-import be.cegeka.android.rx.domain.Plane;
 import be.cegeka.android.rx.domain.Position;
 import rx.Observable;
 import rx.Subscription;
 import rx.functions.Action1;
-import rx.functions.Func1;
 
 import static be.cegeka.android.rx.domain.Game.toPlane;
 import static be.cegeka.android.rx.domain.Plane.toPositions;
@@ -81,24 +79,6 @@ public class MainFragment extends Fragment {
                                     planeView.setY(position.y - deltaY);
                                 }
                             });
-    }
-
-    private Func1<Plane, Observable<PositionTO>> toPositionTOs() {
-        return new Func1<Plane, Observable<PositionTO>>() {
-            @Override
-            public Observable<PositionTO> call(final Plane plane) {
-                return plane.position().map(toPositionTO(plane.getId()));
-            }
-        };
-    }
-
-    private Func1<Position, PositionTO> toPositionTO(final int planeId) {
-        return new Func1<Position, PositionTO>() {
-            @Override
-            public PositionTO call(Position position) {
-                return new PositionTO(planeId, position);
-            }
-        };
     }
 
     @Override
