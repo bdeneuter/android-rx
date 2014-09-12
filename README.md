@@ -1,4 +1,4 @@
-Exercise 1: Make the build green
+Exercise 1: Create Observables
 ================================
 
 In this exercise you will create Observables. See for more information on the wiki from rxjava: 
