@@ -31,8 +31,8 @@ public class Game {
     public Game(Board board, RotationSensor rotationSensor) {
         this.board = board;
         Plane plane = new Plane(ALLIED, new SensorControlWheel(rotationSensor), board);
-        List<Plane> enemies = createEnemies(15);
-        planes = merge(just(plane), from(enemies).zipWith(timer(5, 3, SECONDS), toPlane())).publish();
+        List<Plane> opponents = createOpponents(15);
+        planes = merge(just(plane), from(opponents).zipWith(timer(5, 3, SECONDS), toPlane())).publish();
         collisionDetection = new CollisionDetection(plane, planes);
     }
 
@@ -55,7 +55,7 @@ public class Game {
         return planes;
     }
 
-    private List<Plane> createEnemies(int count) {
+    private List<Plane> createOpponents(int count) {
         List<Plane> enemies = newArrayList();
         for (int i=0; i<count; i++) {
             enemies.add(new Plane(GERMAN, new Position(randomXPositionOnTheBoard(), 1), BOTTOM, new AIControlWheel(), board));
