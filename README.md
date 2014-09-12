@@ -1,8 +1,8 @@
 Exercise 2: Create streams
 ====================================
 
-Show the plane image on the screen on the position of the plane.
-See class MainFragment.
+Show the plane image on the correct location on the screen by subscribing to the stream of positions of the plane.
+See class be.cegeka.android.rx.presentation.MainFragment.
 
     1. Map the game to the plane.
     2. Flat map the stream of positions on the plane
