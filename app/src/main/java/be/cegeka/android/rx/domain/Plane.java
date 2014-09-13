@@ -7,11 +7,11 @@ import com.google.common.base.MoreObjects;
 
 import rx.Observable;
 import rx.functions.Func1;
+import rx.functions.Func2;
 
 import static be.cegeka.android.rx.domain.Army.GERMAN;
 import static be.cegeka.android.rx.domain.Direction.toDelta;
 import static be.cegeka.android.rx.domain.Orientation.TOP;
-import static be.cegeka.android.rx.domain.Position.addPosition;
 import static be.cegeka.android.rx.infrastructure.Sequence.nextInt;
 
 public class Plane {
@@ -25,6 +25,7 @@ public class Plane {
 
     private Army army;
     private Orientation orientation;
+    private Board board;
     private boolean destroyed;
 
     public Plane(Army army, ControlWheel controlWheel, Board board) {
@@ -34,10 +35,10 @@ public class Plane {
     public Plane(final Army army, Position position, final Orientation orientation, ControlWheel controlWheel, final Board board) {
         this.army = army;
         this.orientation = orientation;
+        this.board = board;
         this.position = controlWheel.direction()
                                     .map(toDelta(orientation))
                                     .scan(position, addPosition())
-                                    .filter(onTheBoardOrGerman(army, board))
                                     .distinctUntilChanged()
                                     .takeWhile(notDestroyed())
                                     .takeWhile(board.containsPosition());
@@ -48,15 +49,6 @@ public class Plane {
             @Override
             public Boolean call(Position position) {
                 return !destroyed;
-            }
-        };
-    }
-
-    private Func1<Position, Boolean> onTheBoardOrGerman(final Army army, final Board board) {
-        return new Func1<Position, Boolean>() {
-            @Override
-            public Boolean call(Position position) {
-                return army == GERMAN || board.contains(position);
             }
         };
     }
@@ -82,6 +74,20 @@ public class Plane {
                 return new Bounds(Plane.this, new Rect(position.x  - deltaX, position.y - deltaY, position.x + deltaX, position.y + deltaY));
             }
         });
+    }
+
+    public Func2<Position, Position, Position> addPosition() {
+        return new Func2<Position, Position, Position>() {
+            @Override
+            public Position call(Position oldPosition, Position delta) {
+
+                Position newPosition = oldPosition.add(delta);
+                if (army == GERMAN || board.contains(newPosition)) {
+                    return newPosition;
+                }
+                return oldPosition;
+            }
+        };
     }
 
     @Override
