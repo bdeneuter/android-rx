@@ -14,7 +14,7 @@ import static be.cegeka.android.rx.domain.Army.ALLIED;
 import static be.cegeka.android.rx.domain.Army.GERMAN;
 import static be.cegeka.android.rx.domain.Orientation.BOTTOM;
 import static com.google.common.collect.Lists.newArrayList;
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static rx.Observable.from;
 import static rx.Observable.just;
 import static rx.Observable.merge;
@@ -31,8 +31,8 @@ public class Game {
     public Game(Board board, RotationSensor rotationSensor) {
         this.board = board;
         Plane plane = new Plane(ALLIED, new SensorControlWheel(rotationSensor), board);
-        List<Plane> opponents = createOpponents(15);
-        planes = merge(just(plane), from(opponents).zipWith(timer(5, 3, SECONDS), toPlane())).publish();
+        List<Plane> opponents = createOpponents(25);
+        planes = merge(just(plane), from(opponents).zipWith(timer(5, 1500, MILLISECONDS), toPlane())).publish();
         collisionDetection = new CollisionDetection(plane, planes);
     }
 
