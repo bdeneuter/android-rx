@@ -1,7 +1,5 @@
 package be.cegeka.android.rx.domain;
 
-import android.util.Log;
-
 import com.google.common.base.Optional;
 
 import rx.Observable;
@@ -32,7 +30,6 @@ public class CollisionDetection {
                 .subscribe(new Action1<Collision>() {
                     @Override
                     public void call(Collision collision) {
-                        Log.d("Collision", "Collision detected " + collision);
                         collision.destroyPlanes();
                     }
                 });

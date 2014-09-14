@@ -2,6 +2,7 @@ package be.cegeka.android.rx.presentation;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,29 +72,34 @@ public class MainFragment extends Fragment {
     private void observePlanes() {
         subscriptions.add(
                 game.flatMap(toPlanes())
-                      .subscribeOn(computation())
-                      .observeOn(mainThread())
-                      .subscribe(new Action1<Plane>() {
-                          @Override
-                          public void call(Plane plane) {
-                              handleNewPlane(plane);
-                          }
-                      }));
+                        .subscribeOn(computation())
+                        .observeOn(mainThread())
+                        .subscribe(new Action1<Plane>() {
+                            @Override
+                            public void call(Plane plane) {
+                                handleNewPlane(plane);
+                            }
+                        }));
     }
 
     private void startGame() {
         subscriptions.add(
                 game.subscribeOn(computation())
-                    .subscribe(new Action1<Game>() {
-                        @Override
-                        public void call(Game game) {
-                            subscriptions.add(game.start());
-                        }
-                    }));
+                        .subscribe(new Action1<Game>() {
+                            @Override
+                            public void call(Game game) {
+                                subscriptions.add(game.start());
+                            }
+                        }));
     }
 
     private void handleNewPlane(final Plane plane) {
         final ImageView view = createView(plane);
+        handleDestruction(plane, view);
+        handlePositionChanges(plane, view);
+    }
+
+    private void handlePositionChanges(final Plane plane, final ImageView view) {
         subscriptions.add(
                 plane.position()
                      .subscribeOn(computation())
@@ -102,16 +108,8 @@ public class MainFragment extends Fragment {
 
                          @Override
                          public void onCompleted() {
-                            if (plane.isDestroyed()) {
-                                createExplosionFor(view);
-                            }
-                            view.animate().scaleX(0).setDuration(300).start();
-                            view.animate().scaleY(0).setDuration(300).withEndAction(new Runnable() {
-                                @Override
-                                public void run() {
-                                    getView().removeView(view);
-                                }
-                            }).start();
+                             Log.d("Plane", "Handle onComplete position stream " + plane.getId());
+                             removeView(view);
                          }
 
                          @Override
@@ -121,13 +119,47 @@ public class MainFragment extends Fragment {
 
                          @Override
                          public void onNext(Position position) {
-                            view.setX(pixelConverter().toPixels(position.x) - view.getWidth() / 2);
-                            view.setY(pixelConverter().toPixels(position.y) - view.getHeight() / 2);
-                            view.setVisibility(View.VISIBLE);
+                             view.setX(pixelConverter().toPixels(position.x) - view.getWidth() / 2);
+                             view.setY(pixelConverter().toPixels(position.y) - view.getHeight() / 2);
+                             view.setVisibility(View.VISIBLE);
                          }
                      })
 
         );
+    }
+
+    private void removeView(final ImageView view) {
+        view.animate().scaleX(0).setDuration(300).start();
+        view.animate().scaleY(0).setDuration(300).withEndAction(new Runnable() {
+            @Override
+            public void run() {
+                getView().removeView(view);
+            }
+        }).start();
+    }
+
+    private void handleDestruction(final Plane plane, final ImageView view) {
+        subscriptions.add(plane.destroyed()
+                               .subscribeOn(computation())
+                               .observeOn(mainThread())
+                                .subscribe(new Observer<Boolean>() {
+                                    @Override
+                                    public void onCompleted() {
+                                        Log.d("Plane", "Handle onComplete destroy stream " + plane.getId());
+                                        createExplosionFor(view);
+                                        removeView(view);
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable e) {
+
+                                    }
+
+                                    @Override
+                                    public void onNext(Boolean aBoolean) {
+
+                                    }
+                                }));
     }
 
     private void createExplosionFor(View plane) {

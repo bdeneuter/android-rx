@@ -2,12 +2,14 @@ package be.cegeka.android.rx.domain;
 
 
 import android.graphics.Rect;
+import android.util.Log;
 
 import com.google.common.base.MoreObjects;
 
 import rx.Observable;
 import rx.functions.Func1;
 import rx.functions.Func2;
+import rx.subjects.BehaviorSubject;
 
 import static be.cegeka.android.rx.domain.Army.GERMAN;
 import static be.cegeka.android.rx.domain.Direction.toDelta;
@@ -26,7 +28,8 @@ public class Plane {
     private Army army;
     private Orientation orientation;
     private Board board;
-    private boolean destroyed;
+    private boolean isDestroyed = false;
+    private BehaviorSubject<Boolean> destroyed = BehaviorSubject.create(false);
 
     public Plane(Army army, ControlWheel controlWheel, Board board) {
         this(army, board.getCenter(), TOP, controlWheel, board);
@@ -48,7 +51,7 @@ public class Plane {
         return new Func1<Position, Boolean>() {
             @Override
             public Boolean call(Position position) {
-                return !destroyed;
+                return !isDestroyed;
             }
         };
     }
@@ -63,6 +66,10 @@ public class Plane {
 
     public Observable<Position> position() {
         return position;
+    }
+
+    public Observable<Boolean> destroyed() {
+        return destroyed;
     }
 
     public Observable<Bounds> bounds() {
@@ -100,10 +107,9 @@ public class Plane {
     }
 
     public void destroy() {
-        this.destroyed = true;
-    }
-
-    public boolean isDestroyed() {
-        return destroyed;
+        destroyed.onNext(true);
+        Log.d("Plane", "Before onComplete destroy");
+        isDestroyed = true;
+        destroyed.onCompleted();
     }
 }
