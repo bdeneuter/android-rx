@@ -9,7 +9,7 @@ import com.google.common.base.MoreObjects;
 import rx.Observable;
 import rx.functions.Func1;
 import rx.functions.Func2;
-import rx.subjects.BehaviorSubject;
+import rx.subjects.PublishSubject;
 
 import static be.cegeka.android.rx.domain.Army.GERMAN;
 import static be.cegeka.android.rx.domain.Direction.toDelta;
@@ -28,8 +28,7 @@ public class Plane {
     private Army army;
     private Orientation orientation;
     private Board board;
-    private boolean isDestroyed = false;
-    private BehaviorSubject<Boolean> destroyed = BehaviorSubject.create(false);
+    private PublishSubject<Boolean> destroyed = PublishSubject.create();
 
     public Plane(Army army, ControlWheel controlWheel, Board board) {
         this(army, board.getCenter(), TOP, controlWheel, board);
@@ -43,17 +42,8 @@ public class Plane {
                                     .map(toDelta(orientation))
                                     .scan(position, addPosition())
                                     .distinctUntilChanged()
-                                    .takeWhile(notDestroyed())
+                                    .takeUntil(destroyed)
                                     .takeWhile(board.containsPosition());
-    }
-
-    private Func1<Position, Boolean> notDestroyed() {
-        return new Func1<Position, Boolean>() {
-            @Override
-            public Boolean call(Position position) {
-                return !isDestroyed;
-            }
-        };
     }
 
     public int getId() {
@@ -109,7 +99,6 @@ public class Plane {
     public void destroy() {
         destroyed.onNext(true);
         Log.d("Plane", "Before onComplete destroy");
-        isDestroyed = true;
         destroyed.onCompleted();
     }
 }

@@ -147,7 +147,6 @@ public class MainFragment extends Fragment {
                                     public void onCompleted() {
                                         Log.d("Plane", "Handle onComplete destroy stream " + plane.getId());
                                         createExplosionFor(view);
-                                        removeView(view);
                                     }
 
                                     @Override
