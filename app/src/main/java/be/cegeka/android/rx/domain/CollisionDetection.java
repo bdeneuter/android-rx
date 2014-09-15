@@ -27,6 +27,7 @@ public class CollisionDetection {
                 .filter(isPresent())
                 .map(toCollision())
                 .filter(isCollision())
+                .takeUntil(plane.destroyed())
                 .subscribe(new Action1<Collision>() {
                     @Override
                     public void call(Collision collision) {

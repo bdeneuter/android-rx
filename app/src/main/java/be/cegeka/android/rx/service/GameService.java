@@ -22,7 +22,7 @@ public class GameService {
             @Override
             public void call(Subscriber<? super Game> subscriber) {
                 subscriber.onNext(new Game(board, rotationSensor));
-                subscriber.onCompleted();
+                //subscriber.onCompleted();
             }
         });
     }

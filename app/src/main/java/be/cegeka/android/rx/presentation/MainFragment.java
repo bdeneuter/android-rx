@@ -8,16 +8,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import java.util.List;
-
 import be.cegeka.android.rx.R;
 import be.cegeka.android.rx.domain.Game;
 import be.cegeka.android.rx.domain.Plane;
 import be.cegeka.android.rx.domain.Position;
 import rx.Observable;
 import rx.Observer;
+import rx.Subscriber;
 import rx.Subscription;
-import rx.functions.Action1;
+import rx.subscriptions.Subscriptions;
 
 import static android.view.View.INVISIBLE;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -27,7 +26,6 @@ import static be.cegeka.android.rx.domain.Game.toPlanes;
 import static be.cegeka.android.rx.domain.Orientation.BOTTOM;
 import static be.cegeka.android.rx.infrastructure.BeanProvider.gameService;
 import static be.cegeka.android.rx.infrastructure.BeanProvider.pixelConverter;
-import static com.google.common.collect.Lists.newArrayList;
 import static rx.android.schedulers.AndroidSchedulers.mainThread;
 import static rx.schedulers.Schedulers.computation;
 
@@ -35,7 +33,7 @@ public class MainFragment extends Fragment {
 
     public static final int DURATION = 1500;
     private Observable<Game> game;
-    private List<Subscription> subscriptions = newArrayList();
+    private Subscription subscription = Subscriptions.empty();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -56,52 +54,70 @@ public class MainFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        observePlanes();
-        startGame();
+        Subscriptions.from(
+                observePlanes(getView()),
+                startGame());
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        for(Subscription subscription: subscriptions) {
-            subscription.unsubscribe();
-        }
+        subscription.unsubscribe();
         getView().removeAllViews();
     }
 
-    private void observePlanes() {
-        subscriptions.add(
-                game.flatMap(toPlanes())
-                        .subscribeOn(computation())
-                        .observeOn(mainThread())
-                        .subscribe(new Action1<Plane>() {
-                            @Override
-                            public void call(Plane plane) {
-                                handleNewPlane(plane);
-                            }
-                        }));
+    private Subscription observePlanes(final ViewGroup parent) {
+        return game.flatMap(toPlanes())
+                   .subscribeOn(computation())
+                   .observeOn(mainThread())
+                   .subscribe(new Subscriber<Plane>() {
+                       @Override
+                       public void onCompleted() {
+
+                       }
+
+                       @Override
+                       public void onError(Throwable e) {
+
+                       }
+
+                       @Override
+                       public void onNext(Plane plane) {
+                            add(handleNewPlane(plane, parent));
+                       }
+                   });
     }
 
-    private void startGame() {
-        subscriptions.add(
-                game.subscribeOn(computation())
-                        .subscribe(new Action1<Game>() {
-                            @Override
-                            public void call(Game game) {
-                                subscriptions.add(game.start());
-                            }
-                        }));
+    private Subscription startGame() {
+        return game.subscribeOn(computation())
+                   .subscribe(new Subscriber<Game>() {
+                       @Override
+                       public void onCompleted() {
+
+                       }
+
+                       @Override
+                       public void onError(Throwable e) {
+
+                       }
+
+                       @Override
+                       public void onNext(Game game) {
+                           add(game.start());
+                       }
+                   });
     }
 
-    private void handleNewPlane(final Plane plane) {
-        final ImageView view = createView(plane);
-        handleDestruction(plane, view);
-        handlePositionChanges(plane, view);
+    private Subscription handleNewPlane(Plane plane, ViewGroup parent) {
+        ImageView view = createView(plane);
+        return Subscriptions.from(
+                handleDestruction(plane, view),
+                handlePositionChanges(plane, parent, view)
+        );
     }
 
-    private void handlePositionChanges(final Plane plane, final ImageView view) {
-        subscriptions.add(
-                plane.position()
+    private Subscription handlePositionChanges(final Plane plane, final ViewGroup parent, final ImageView view) {
+                return plane.position()
                      .subscribeOn(computation())
                      .observeOn(mainThread())
                      .subscribe(new Observer<Position>() {
@@ -109,7 +125,7 @@ public class MainFragment extends Fragment {
                          @Override
                          public void onCompleted() {
                              Log.d("Plane", "Handle onComplete position stream " + plane.getId());
-                             removeView(view);
+                             removeView(parent, view);
                          }
 
                          @Override
@@ -123,42 +139,40 @@ public class MainFragment extends Fragment {
                              view.setY(pixelConverter().toPixels(position.y) - view.getHeight() / 2);
                              view.setVisibility(View.VISIBLE);
                          }
-                     })
-
-        );
+                     });
     }
 
-    private void removeView(final ImageView view) {
+    private void removeView(final ViewGroup parent, final ImageView view) {
         view.animate().scaleX(0).setDuration(300).start();
         view.animate().scaleY(0).setDuration(300).withEndAction(new Runnable() {
             @Override
             public void run() {
-                getView().removeView(view);
+                parent.removeView(view);
             }
         }).start();
     }
 
-    private void handleDestruction(final Plane plane, final ImageView view) {
-        subscriptions.add(plane.destroyed()
-                               .subscribeOn(computation())
-                               .observeOn(mainThread())
-                                .subscribe(new Observer<Boolean>() {
-                                    @Override
-                                    public void onCompleted() {
-                                        Log.d("Plane", "Handle onComplete destroy stream " + plane.getId());
-                                        createExplosionFor(view);
-                                    }
+    private Subscription handleDestruction(final Plane plane, final ImageView view) {
+        return plane.destroyed()
+                   .subscribeOn(computation())
+                   .observeOn(mainThread())
+                    .subscribe(new Observer<Boolean>() {
+                        @Override
+                        public void onCompleted() {
+                            Log.d("Plane", "Handle onComplete destroy stream " + plane.getId());
+                            createExplosionFor(view);
+                        }
 
-                                    @Override
-                                    public void onError(Throwable e) {
+                        @Override
+                        public void onError(Throwable e) {
 
-                                    }
+                        }
 
-                                    @Override
-                                    public void onNext(Boolean aBoolean) {
+                        @Override
+                        public void onNext(Boolean aBoolean) {
 
-                                    }
-                                }));
+                        }
+                    });
     }
 
     private void createExplosionFor(View plane) {

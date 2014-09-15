@@ -9,6 +9,7 @@ import rx.Subscription;
 import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.observables.ConnectableObservable;
+import rx.subscriptions.Subscriptions;
 
 import static be.cegeka.android.rx.domain.Army.ALLIED;
 import static be.cegeka.android.rx.domain.Army.GERMAN;
@@ -31,8 +32,7 @@ public class Game {
     public Game(Board board, RotationSensor rotationSensor) {
         this.board = board;
         Plane plane = new Plane(ALLIED, new SensorControlWheel(rotationSensor), board);
-        List<Plane> opponents = createOpponents(25);
-        planes = merge(just(plane), from(opponents).zipWith(timer(5, 1500, MILLISECONDS), toPlane())).publish();
+        planes = merge(just(plane), from(createOpponents(25)).zipWith(timer(1000, 1500, MILLISECONDS), toPlane())).publish();
         collisionDetection = new CollisionDetection(plane, planes);
     }
 
@@ -46,9 +46,10 @@ public class Game {
     }
 
     public Subscription start() {
-        Subscription subscription = collisionDetection.start();
-        planes().connect();
-        return subscription;
+        return Subscriptions.from(
+                collisionDetection.start(),
+                planes.connect()
+        );
     }
 
     public ConnectableObservable<Plane> planes() {
