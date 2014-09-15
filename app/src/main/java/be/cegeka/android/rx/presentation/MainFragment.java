@@ -162,17 +162,18 @@ public class MainFragment extends Fragment {
     }
 
     private void createExplosionFor(View plane) {
+        final ViewGroup parent = getView();
         final ImageView view = new ImageView(getActivity());
         view.setImageResource(R.drawable.custom_exlposion);
         view.setX(plane.getX());
         view.setY(plane.getY());
         view.setScaleX(0);
         view.setScaleY(0);
-        getView().addView(view, 0, new LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+        parent.addView(view, 0, new LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
         view.animate().setDuration(DURATION).scaleX(1).withEndAction(new Runnable() {
             @Override
             public void run() {
-                getView().removeView(view);
+                parent.removeView(view);
             }
         }).start();
         view.animate().setDuration(1500).scaleY(1).start();
