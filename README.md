@@ -1,6 +1,8 @@
 android-rx
 ==========
 
+Video: https://plus.google.com/107290205238023161637/posts/ZpjVoF4n1LM
+
 Please checkout the branches with exercises. Each exercise is on a different branch:
 
   * exercise1: Create Observables
